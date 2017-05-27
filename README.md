@@ -56,6 +56,8 @@ Returns
 
 Find an existing movie by id
 
+Returns the movie record
+
 #### `GET /movie/:id/asof/:time`
 
 Get the state of a movie at a point in time
@@ -63,6 +65,8 @@ Get the state of a movie at a point in time
 #### `PUT /movie/:id`
 
 Update an existing id. Request body contains attributes to update.
+
+Returns the updated movie record
 
 #### `DELETE /movie/:id`
 
@@ -72,7 +76,39 @@ Removes a movie by id
 
 Get transaction history for a movie
 
+Returns
+
+```
+{
+    "history": [
+        {
+            "id": 17592186045418,
+            "user": "some user",
+            "message": "some commit message",
+            "ts": 13194139534315
+        }, ...
+    ]
+}
+```
+
 #### `GET /movie/:id/history/:attribute`
 
 Get transaction history for an attribute of a movie
 
+Returns 
+
+```
+{
+    "history": [
+        {
+            "id": 17592186045418,
+            "user": "some user",
+            "message": "some commit message",
+            "redact": true,
+            "attr": "movie/genre",
+            "value": "Drama",
+            "ts": 13194139534315
+        }, ...
+    ]
+}
+```
