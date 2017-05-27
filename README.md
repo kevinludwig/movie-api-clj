@@ -116,7 +116,8 @@ Returns
             "id": 17592186045418,
             "user": "some user",
             "message": "some commit message",
-            "ts": 13194139534315
+            "tid": 13194139534315,
+            "ts": "2017-05-27T21:29:51Z"
         }, ...
     ]
 }
@@ -135,10 +136,11 @@ Returns
             "id": 17592186045418,
             "user": "some user",
             "message": "some commit message",
-            "redact": true,
+            "added": true,
             "attr": "movie/genre",
             "value": "Drama",
-            "ts": 13194139534315
+            "tid": 13194139534315,
+            "ts": "2017-05-27T21:29:51Z"
         }, ...
     ]
 }

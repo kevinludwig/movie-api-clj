@@ -56,21 +56,23 @@
 
 (defn history [id]
     (let [hdb (d/history (db/get-db))
-          tx-keys [:id :ts :user :message]
-          query '[:find ?id ?t ?user ?message
+          tx-keys [:id :tid :ts :user :message]
+          query '[:find ?id ?t ?ts ?user ?message
                   :in $ ?id
                   :where [?id _ _ ?t]
+                         [?t :db/txInstant ?ts]
                          [?t :audit/user ?user]
                          [?t :audit/message ?message]]]
         (to-obj (d/q query hdb (Long/parseLong id)) tx-keys)))
 
 (defn attribute-history [id attr-name]
     (let [hdb (d/history (db/get-db))
-          tx-keys [:id :attr :value :redact :ts :user :message]
+          tx-keys [:id :attr :value :added :tid :ts :user :message]
           attr (keyword "movie" attr-name)
-          query '[:find ?id ?attr ?value ?op ?t ?user ?message 
+          query '[:find ?id ?attr ?value ?op ?t ?ts ?user ?message 
                   :in $ ?id ?attr
                   :where [?id ?attr ?value ?t ?op]
+                         [?t :db/txInstant ?ts]
                          [?t :audit/user ?user]
                          [?t :audit/message ?message]]]
         (to-obj (d/q query hdb (Long/parseLong id) attr) tx-keys)))
