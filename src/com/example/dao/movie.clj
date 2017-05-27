@@ -51,21 +51,26 @@
           datom @(d/transact cxn [retract tx-datom])]
         (log/debug "deleted" (:tx-data datom))))
 
+(defn- to-obj [data keys]
+    (map #(zipmap keys %) data))
+
 (defn history [id]
     (let [hdb (d/history (db/get-db))
+          tx-keys [:id :ts :user :message]
           query '[:find ?id ?t ?user ?message
                   :in $ ?id
                   :where [?id _ _ ?t]
                          [?t :audit/user ?user]
                          [?t :audit/message ?message]]]
-        (d/q query hdb (Long/parseLong id))))
+        (to-obj (d/q query hdb (Long/parseLong id)) tx-keys)))
 
 (defn attribute-history [id attr-name]
     (let [hdb (d/history (db/get-db))
+          tx-keys [:id :attr :value :redact :ts :user :message]
           attr (keyword "movie" attr-name)
-          query '[:find ?value ?op ?t ?user ?message 
+          query '[:find ?id ?attr ?value ?op ?t ?user ?message 
                   :in $ ?id ?attr
                   :where [?id ?attr ?value ?t ?op]
                          [?t :audit/user ?user]
                          [?t :audit/message ?message]]]
-        (d/q query hdb (Long/parseLong id) attr)))
+        (to-obj (d/q query hdb (Long/parseLong id) attr) tx-keys)))
