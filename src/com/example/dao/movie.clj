@@ -18,11 +18,18 @@
 (defn- transform [m]
     (rename-keys m (map-invert mappings)))
 
+(defn- audit-log [user msg]
+    (let [tx-id (d/tempid :db.part/tx)]
+        {:db/id tx-id
+         :audit/user user
+         :audit/message msg}))
+
 (defn create [body]
     (let [cxn (db/get-conn)
           id (d/tempid :db.part/user)
           datom (make-movie id body)
-          tx @(d/transact cxn [datom])]
+          tx-datom (audit-log "kevin" "create")
+          tx @(d/transact cxn [datom tx-datom])]
         (d/resolve-tempid (db/get-db) (:tempids tx) (:db/id datom))))
 
 (defn find-by-id [id t]
@@ -32,20 +39,24 @@
 
 (defn updat [id body] 
     (let [cxn (db/get-conn)
-          tx-data (make-movie (Long/parseLong id) body)
-          tx @(d/transact cxn [tx-data])]
+          datom (make-movie (Long/parseLong id) body)
+          tx-datom (audit-log "kevin" "update")
+          tx @(d/transact cxn [datom tx-datom])]
         (find-by-id id nil)))
 
 (defn delete [id] 
     (let [cxn (db/get-conn)
-          retract [[:db.fn/retractEntity (Long/parseLong id)]]
-          datom @(d/transact cxn retract)]
+          retract [:db.fn/retractEntity (Long/parseLong id)]
+          tx-datom (audit-log "kevin" "delete")
+          datom @(d/transact cxn [retract tx-datom])]
         (log/debug "deleted" (:tx-data datom))))
 
 (defn attribute-history [id attr-name]
     (let [hdb (d/history (db/get-db))
           attr (keyword "movie" attr-name)
-          query '[:find ?value ?op ?t 
+          query '[:find ?value ?op ?t ?user ?message 
                   :in $ ?id ?attr
-                  :where [?id ?attr ?value ?t ?op]]]
+                  :where [?id ?attr ?value ?t ?op]
+                         [?t :audit/user ?user]
+                         [?t :audit/message ?message]]]
         (d/q query hdb (Long/parseLong id) attr)))

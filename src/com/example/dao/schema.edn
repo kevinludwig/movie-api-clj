@@ -16,4 +16,16 @@
      :db/valueType :db.type/string
      :db/cardinality :db.cardinality/one
      :db/doc "the genre of the movie"}
+
+    {:db/id #db/id[:db.part/db]
+     :db/ident :audit/user
+     :db/valueType :db.type/string
+     :db/cardinality :db.cardinality/one
+     :db/doc "the user executing the transaction"}
+
+    {:db/id #db/id[:db.part/db]
+    :db/ident :audit/message
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one
+    :db/doc "the commit message"}
 ]
