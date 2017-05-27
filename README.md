@@ -38,9 +38,15 @@ Request body
 
 ```
 {
-    "title": "Gravity",
-    "release_year": 2013,
-    "genre": "Thriller"
+    "movie": {
+        "title": "Gravity",
+        "release_year": 2013,
+        "genre": "Thriller"
+    }, 
+    "audit": {
+        "user": "some user",
+        "message": "some commit message"
+    }
 }
 ```
 
@@ -66,11 +72,36 @@ Get the state of a movie at a point in time
 
 Update an existing id. Request body contains attributes to update.
 
+Request body
+
+```
+{
+    "movie": {
+        "genre": "Drama"
+    },
+    "audit": {
+        "user": "some user",
+        "message": "some commit message"
+    }
+}
+```
+
 Returns the updated movie record
 
 #### `DELETE /movie/:id`
 
 Removes a movie by id
+
+Request body
+
+```
+{
+    "audit": {
+        "user": "some user",
+        "message": "some commit message"
+    }
+}
+```
 
 #### `GET /movie/:id/history`
 
