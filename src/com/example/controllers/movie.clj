@@ -36,7 +36,7 @@
         (log/debug "movie attribute history" id attr)
         (response {:history (dao/attribute-history id attr)})))
 
-(defn history [id attr] 
+(defn history [id] 
     (wrap-try
-        (log/debug "movie history" id attr)
-        (response {:status "ok"})))
+        (log/debug "movie history" id)
+        (response {:history (dao/history id)})))
