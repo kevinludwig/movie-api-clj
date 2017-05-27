@@ -16,20 +16,27 @@
         (log/debug "movie find-by-id" id t)
         (response (dao/find-by-id id t))))
 
-(defn create [body] 
+(defn create [req] 
     (wrap-try 
+        (let [body (get-in req [:body :movie])
+              audit (get-in req [:body :audit])]
         (log/debug "movie create" body)
-        (response {:id (dao/create body)})))
+        (response {:id (dao/create body audit)}))))
 
-(defn updat [id body] 
+(defn updat [req] 
     (wrap-try 
+        (let [id (get-in req [:params :id])
+              body (get-in req [:body :movie])
+              audit (get-in req [:body :audit])]
         (log/debug "movie update id=" id "body=" body)
-        (response (dao/updat id body))))
+        (response (dao/updat id body audit)))))
 
-(defn delete [id] 
+(defn delete [req] 
     (wrap-try
+        (let [id (get-in req [:params :id])
+              audit (get-in req [:body :audit])]
         (log/debug "movie delete" id)
-        (response {:status "ok"})))
+        (response (dao/delete id audit)))))
 
 (defn attribute-history [id attr] 
     (wrap-try

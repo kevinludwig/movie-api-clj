@@ -18,17 +18,17 @@
 (defn- transform [m]
     (rename-keys m (map-invert mappings)))
 
-(defn- audit-log [user msg]
+(defn- audit-log [audit]
     (let [tx-id (d/tempid :db.part/tx)]
         {:db/id tx-id
-         :audit/user user
-         :audit/message msg}))
+         :audit/user (:user audit)
+         :audit/message (:message audit)}))
 
-(defn create [body]
+(defn create [body audit]
     (let [cxn (db/get-conn)
           id (d/tempid :db.part/user)
           datom (make-movie id body)
-          tx-datom (audit-log "kevin" "create")
+          tx-datom (audit-log audit)
           tx @(d/transact cxn [datom tx-datom])]
         (d/resolve-tempid (db/get-db) (:tempids tx) (:db/id datom))))
 
@@ -37,17 +37,17 @@
           entity (d/pull as-of-db '[*] (Long/parseLong id))]
         (when entity (transform entity))))
 
-(defn updat [id body] 
+(defn updat [id body audit] 
     (let [cxn (db/get-conn)
           datom (make-movie (Long/parseLong id) body)
-          tx-datom (audit-log "kevin" "update")
+          tx-datom (audit-log audit)
           tx @(d/transact cxn [datom tx-datom])]
         (find-by-id id nil)))
 
-(defn delete [id] 
+(defn delete [id audit] 
     (let [cxn (db/get-conn)
           retract [:db.fn/retractEntity (Long/parseLong id)]
-          tx-datom (audit-log "kevin" "delete")
+          tx-datom (audit-log audit)
           datom @(d/transact cxn [retract tx-datom])]
         (log/debug "deleted" (:tx-data datom))))
 
