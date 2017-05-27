@@ -30,7 +30,7 @@
           entity (d/pull as-of-db '[*] (Long/parseLong id))]
         (when entity (transform entity))))
 
-(defn update [id body] 
+(defn updat [id body] 
     (let [cxn (db/get-conn)
           tx-data (make-movie (Long/parseLong id) body)
           tx @(d/transact cxn [tx-data])]
@@ -41,3 +41,11 @@
           retract [[:db.fn/retractEntity (Long/parseLong id)]]
           datom @(d/transact cxn retract)]
         (log/debug "deleted" (:tx-data datom))))
+
+(defn attribute-history [id attr-name]
+    (let [hdb (d/history (db/get-db))
+          attr (keyword "movie" attr-name)
+          query '[:find ?value ?op ?t 
+                  :in $ ?id ?attr
+                  :where [?id ?attr ?value ?t ?op]]]
+        (d/q query hdb (Long/parseLong id) attr)))

@@ -24,7 +24,7 @@
 (defn updat [id body] 
     (wrap-try 
         (log/debug "movie update id=" id "body=" body)
-        (response (dao/update id body))))
+        (response (dao/updat id body))))
 
 (defn delete [id] 
     (wrap-try
@@ -34,7 +34,7 @@
 (defn attribute-history [id attr] 
     (wrap-try
         (log/debug "movie attribute history" id attr)
-        (response {:status "ok"})))
+        (response {:history (dao/attribute-history id attr)})))
 
 (defn history [id attr] 
     (wrap-try
