@@ -1,0 +1,19 @@
+[
+    {:db/id #db/id[:db.part/db]
+     :db/ident :movie/title
+     :db/valueType :db.type/string
+     :db/cardinality :db.cardinality/one
+     :db/doc "the title of the movie"}
+
+    {:db/id #db/id[:db.part/db]
+     :db/ident :movie/release-year
+     :db/valueType :db.type/long
+     :db/cardinality :db.cardinality/one
+     :db/doc "original theatrical release year"}
+
+    {:db/id #db/id[:db.part/db]
+     :db/ident :movie/genre
+     :db/valueType :db.type/string
+     :db/cardinality :db.cardinality/one
+     :db/doc "the genre of the movie"}
+]
