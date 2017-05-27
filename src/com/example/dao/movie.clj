@@ -27,16 +27,13 @@
 
 (defn find-by-id [id t]
     (let [as-of-db (if t (d/as-of (db/get-db) t) (db/get-db))
-          query '[:find (pull ?id [*])
-                 :in $ ?id 
-                 :where [?id]]
-          datoms (d/q query as-of-db (Long/parseLong id))]
-        (when datoms (transform (ffirst datoms)))))
+          entity (d/pull as-of-db '[*] (Long/parseLong id))]
+        (when entity (transform entity))))
 
 (defn update [id body] 
     (let [cxn (db/get-conn)
-          tx-data (make-movie id body)
-          datom @(d/transact cxn [tx-data])]
+          tx-data (make-movie (Long/parseLong id) body)
+          tx @(d/transact cxn [tx-data])]
         (find-by-id id nil)))
 
 (defn delete [id] 
