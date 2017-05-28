@@ -2,21 +2,32 @@
     (:import (java.util.Date))
     (:require
         [taoensso.timbre :as log]
-        [clojure.set :refer [rename-keys map-invert]]
+        [clojure.set :refer [map-invert]]
+        [clojure.walk :refer [postwalk-replace]]
         [datomic.api :only [db q pull] :as d]
         [com.example.dao.db :as db]))
 
 (def mappings 
     {:id :db/id
      :title :movie/title
+     :synopsis :movie/synopsis
+     :runtime :movie/runtime
      :release_year :movie/release-year
-     :genre :movie/genre})
+     :genres :movie/genres
+     :cast :movie/cast
+     :cast_name :cast/name
+     :cast_role :cast/role
+     :cast_id :cast/id
+     :rating :movie/rating
+     :rating_value :rating/value
+     :rating_advisories :rating/advisories
+     :rating_source :rating/source})
 
 (defn- make-movie [id body]
-    (rename-keys (assoc body :id id) mappings))
+    (postwalk-replace mappings (assoc body :id id)))
 
 (defn- transform [m]
-    (rename-keys m (map-invert mappings)))
+    (postwalk-replace (map-invert mappings) m))
 
 (defn- audit-log [audit]
     (let [tx-id (d/tempid :db.part/tx)]

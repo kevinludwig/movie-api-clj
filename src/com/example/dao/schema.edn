@@ -6,16 +6,72 @@
      :db/doc "the title of the movie"}
 
     {:db/id #db/id[:db.part/db]
+     :db/ident :movie/synopsis
+     :db/valueType :db.type/string
+     :db/cardinality :db.cardinality/one
+     :db/doc "movie synopsis"}
+    
+    {:db/id #db/id[:db.part/db]
+     :db/ident :movie/runtime
+     :db/valueType :db.type/long
+     :db/cardinality :db.cardinality/one
+     :db/doc "runtime in minutes"}
+
+    {:db/id #db/id[:db.part/db]
      :db/ident :movie/release-year
      :db/valueType :db.type/long
      :db/cardinality :db.cardinality/one
      :db/doc "original theatrical release year"}
 
     {:db/id #db/id[:db.part/db]
-     :db/ident :movie/genre
+     :db/ident :movie/genres
+     :db/valueType :db.type/string
+     :db/cardinality :db.cardinality/many
+     :db/doc "the genres of the movie"}
+ 
+    {:db/id #db/id[:db.part/db]
+     :db/ident :movie/cast
+     :db/valueType :db.type/ref
+     :db/isComponent true
+     :db/cardinality :db.cardinality/many
+     :db/doc "cast/crew for movie"}
+
+    {:db/id #db/id[:db.part/db]
+     :db/ident :cast/name
      :db/valueType :db.type/string
      :db/cardinality :db.cardinality/one
-     :db/doc "the genre of the movie"}
+     :db/doc "the person's name"}
+
+    {:db/id #db/id[:db.part/db]
+     :db/ident :cast/role
+     :db/valueType :db.type/string
+     :db/cardinality :db.cardinality/one
+     :db/doc "role, e.g. actor, director, writer, producer"}
+   
+    {:db/id #db/id[:db.part/db]
+     :db/ident :movie/rating
+     :db/valueType :db.type/ref
+     :db/isComponent true
+     :db/cardinality :db.cardinality/one
+     :db/doc "rating information"}
+
+    {:db/id #db/id[:db.part/db]
+     :db/ident :rating/value
+     :db/valueType :db.type/string
+     :db/cardinality :db.cardinality/one
+     :db/doc "one of NR, G, PG, PG13, R, NC17"}
+
+    {:db/id #db/id[:db.part/db]
+     :db/ident :rating/source
+     :db/valueType :db.type/string
+     :db/cardinality :db.cardinality/one
+     :db/doc "the rating body, e.g. MPAA"}
+
+    {:db/id #db/id[:db.part/db]
+     :db/ident :rating/advisories
+     :db/valueType :db.type/string
+     :db/cardinality :db.cardinality/many
+     :db/doc "rating advisories"}
 
     {:db/id #db/id[:db.part/db]
      :db/ident :audit/user
