@@ -9,7 +9,7 @@
     (try 
         (log/debug "schema create")
         (when (db/create-db)
-            (response (schema/create)))
+            (response {:schema (schema/create)}))
         (catch Exception e
             (log/error e)
             (response {:error (.getMessage e)}))))
