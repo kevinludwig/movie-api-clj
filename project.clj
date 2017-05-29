@@ -20,12 +20,10 @@
         :dev {:plugins [
             [lein-ancient "0.6.3"]
             [lein-kibit "0.1.2"]
-            [lein-midje "3.2"]
             [lein-cloverage "1.0.6"]
             [lein-cljfmt "0.5.3"]
             [jonase/eastwood "0.2.3"]]
             :dependencies [
-                [midje "1.8.3"]
                 [ring/ring-mock "0.3.0"]
             ]}})
 
