@@ -44,7 +44,7 @@
         (d/resolve-tempid (db/get-db) (:tempids tx) (:db/id datom))))
 
 (defn find-by-id [id t]
-    (let [as-of-db (if t (d/as-of (db/get-db) t) (db/get-db))
+    (let [as-of-db (if t (d/as-of (db/get-db) (Long/parseLong t)) (db/get-db))
           entity (d/pull as-of-db '[*] (Long/parseLong id))]
         (when entity (transform entity))))
 

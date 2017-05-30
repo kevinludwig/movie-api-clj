@@ -77,6 +77,16 @@
               body (-> (:body res) (json/parse-string true))]
             (is (= (:status res) 200))
             (is (not (contains? body :error)))))
+    
+    (testing "GET /movie/:id/asof/:t should return movie at point in time"
+        (let [h-res (app (mock/request :get (str "/movie/" @gravity-id "/history")))
+              h-body (-> (:body h-res) (json/parse-string true))
+              tid (first (map :tid (:history h-body)))
+              res (app (mock/request :get (str "/movie/" @gravity-id "/asof/" tid)))
+              body (-> (:body res) (json/parse-string true))]
+            (is (= (:status res) 200))
+            (is (not (contains? body :error)))
+            (is (= (:title body) "Gravity"))))
 
     (testing "404 for not found route"
         (let [res (app (mock/request :get "/some/random/route"))]
