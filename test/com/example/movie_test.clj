@@ -52,6 +52,20 @@
             (is (= (:status res) 200))
             (is (not (contains? body :error)))
             (is (= (:title body) "Gravity"))))
+    
+    (testing "GET /movie/:id/history should return entity level history records"
+        (let [res (app (mock/request :get (str "/movie/" @gravity-id "/history")))
+              body (-> (:body res) (json/parse-string true))]
+            (is (= (:status res) 200))
+            (is (not (contains? body :error)))
+            (is (= (map :message (:history body)) ["test create", "add cast, fix genres"]))))
+
+    (testing "GET /movie/:id/history/:attr should return attribute level history records"
+        (let [res (app (mock/request :get (str "/movie/" @gravity-id "/history/rating_value")))
+              body (-> (:body res) (json/parse-string true))]
+            (is (= (:status res) 200))
+            (is (not (contains? body :error)))
+            (is (= (count (:history body)) 3))))
 
     (testing "404 for not found route"
         (let [res (app (mock/request :get "/some/random/route"))]

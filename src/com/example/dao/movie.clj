@@ -79,7 +79,7 @@
 (defn attribute-history [id attr-name]
     (let [hdb (d/history (db/get-db))
           tx-keys [:id :attr :value :added :tid :ts :user :message]
-          attr (keyword "movie" attr-name)
+          attr (get mappings (keyword attr-name))
           query '[:find ?id ?attr ?value ?op ?t ?ts ?user ?message 
                   :in $ ?id ?attr
                   :where [?id ?attr ?value ?t ?op]
