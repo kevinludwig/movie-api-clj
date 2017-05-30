@@ -96,7 +96,8 @@ Request body
 ```
 {
     "movie": {
-        "genre": "Drama"
+        "genres": ["Drama"],
+        "synopsis": "updated synopsis"
     },
     "audit": {
         "user": "some user",
