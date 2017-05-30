@@ -40,8 +40,17 @@ Request body
 {
     "movie": {
         "title": "Gravity",
+        "synopsis": "",
         "release_year": 2013,
-        "genre": "Thriller"
+        "genres": ["Thriller"],
+        "runtime": 90,
+        "cast": [
+            {"person_name": "Sandra Bullock", "person_role": "Actor"}
+        ],
+        "rating": {
+            "rating_value": "PG-13",
+            "rating_source": "MPAA"
+        }
     }, 
     "audit": {
         "user": "some user",

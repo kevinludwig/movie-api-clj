@@ -15,9 +15,9 @@
      :release_year :movie/release-year
      :genres :movie/genres
      :cast :movie/cast
-     :cast_name :cast/name
-     :cast_role :cast/role
-     :cast_id :cast/id
+     :person_name :cast/name
+     :person_role :cast/role
+     :person_id :cast/id
      :rating :movie/rating
      :rating_value :rating/value
      :rating_advisories :rating/advisories
