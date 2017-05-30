@@ -18,7 +18,7 @@
     
     (testing "POST /movie should create a movie record"
         (let [movie {:movie {:title "Gravity" :release_year 2013 :genres ["Drama" "Thriller"] 
-                     :rating {:rating_value "R" :rating_source "MPAA"} :runtime 90}
+                     :rating {:rating_value "R" :rating_source "MPAA"} :synopsis "first synopsis" :runtime 90}
                      :audit {:user "kevin" :message "test create"}}
               res (-> (mock/request :post "/movie")
                       (mock/content-type "application/json")
@@ -32,7 +32,8 @@
             (is (number? @gravity-id))))
 
     (testing "PUT /movie/:id should update the movie record"
-        (let [movie {:movie {:rating {:rating_value "PG-13"} :cast [{:person_name "Sandra Bullock" :person_role "Actor"}]}
+        (let [movie {:movie {:rating {:rating_value "PG-13"} :synopsis "updated synopsis" 
+                     :cast [{:person_name "Sandra Bullock" :person_role "Actor"}]}
                      :audit {:user "kevin" :message "add cast, fix genres"}}
               res (-> (mock/request :put (str "/movie/" @gravity-id))
                       (mock/content-type "application/json")
@@ -61,11 +62,21 @@
             (is (= (map :message (:history body)) ["test create", "add cast, fix genres"]))))
 
     (testing "GET /movie/:id/history/:attr should return attribute level history records"
-        (let [res (app (mock/request :get (str "/movie/" @gravity-id "/history/rating_value")))
+        (let [res (app (mock/request :get (str "/movie/" @gravity-id "/history/synopsis")))
               body (-> (:body res) (json/parse-string true))]
             (is (= (:status res) 200))
             (is (not (contains? body :error)))
             (is (= (count (:history body)) 3))))
+
+    (testing "DELETE /movie/:id should remove the entity"
+        (let [audit {:audit {:user "kevin" :message "done testing"}}
+              res (-> (mock/request :delete (str "/movie/" @gravity-id))
+                      (mock/content-type "application/json")
+                      (mock/body (json/generate-string audit))
+                      app)
+              body (-> (:body res) (json/parse-string true))]
+            (is (= (:status res) 200))
+            (is (not (contains? body :error)))))
 
     (testing "404 for not found route"
         (let [res (app (mock/request :get "/some/random/route"))]
