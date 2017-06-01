@@ -38,10 +38,10 @@
         (log/debug "movie delete" id)
         (response (dao/delete id audit)))))
 
-(defn attribute-history [id attr] 
+(defn attribute-history [id root-attr leaf-attr] 
     (wrap-try
-        (log/debug "movie attribute history" id attr)
-        (response {:history (dao/attribute-history id attr)})))
+        (log/debug "movie attribute history" id root-attr leaf-attr)
+        (response {:history (dao/attribute-history id root-attr leaf-attr)})))
 
 (defn history [id] 
     (wrap-try

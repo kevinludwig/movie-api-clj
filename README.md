@@ -3,8 +3,6 @@ Clojure + Datomic Rest API
 
 ### Known issues
 
-* you can't get history on rating in the way you'd expect, i.e if you pass the movie id and `rating_value` as the attribute, it 
-won't return results (it wants you to pass the rating id not the movie id 
 * If you call the update API to change the genres, you end up with a superset of the prior and current array values.
 * generally validation is not very good, i.e. if you forget a request body parameter (say, the audit fields) it will just blow 
 up deep in datomic somewhere, vs rejecting with 400 in the controller

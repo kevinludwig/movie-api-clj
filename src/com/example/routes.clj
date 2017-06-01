@@ -14,5 +14,6 @@
     (PUT "/movie/:id" req (movie/updat req))
     (DELETE "/movie/:id" req (movie/delete req))
     (GET "/movie/:id/history" [id] (movie/history id))
-    (GET "/movie/:id/history/:attr" [id attr] (movie/attribute-history id attr))
+    (GET "/movie/:id/history/:root-attr/:leaf-attr" [id root-attr leaf-attr] (movie/attribute-history id root-attr leaf-attr))
+    (GET "/movie/:id/history/:root-attr" [id root-attr] (movie/attribute-history id root-attr nil))
     (route/not-found (notfound/notfound)))

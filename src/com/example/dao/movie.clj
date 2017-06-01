@@ -74,16 +74,28 @@
                          [?t :db/txInstant ?ts]
                          [?t :audit/user ?user]
                          [?t :audit/message ?message]]]
-        (to-obj (d/q query hdb (Long/parseLong id)) tx-keys)))
+        (sort-by :tid (to-obj (d/q query hdb (Long/parseLong id)) tx-keys))))
 
-(defn attribute-history [id attr-name]
+(defn- resolve-attribute-history-query [root-attr leaf-attr]
+    (let [root-query '[:find ?id ?attr ?value ?op ?t ?ts ?user ?message
+                       :in $ ?id ?attr
+                       :where [?id ?attr ?value ?t ?op]
+                       [?t :db/txInstant ?ts]
+                       [?t :audit/user ?user]
+                       [?t :audit/message ?message]]
+          leaf-query '[:find ?id ?attr ?value ?op ?t ?ts ?user ?message
+                       :in $ ?id ?root ?attr
+                       :where [?id ?root ?ref]
+                       [?ref ?attr ?value ?t ?op]
+                       [?t :db/txInstant ?ts]
+                       [?t :audit/user ?user]
+                       [?t :audit/message ?message]]]
+        (if leaf-attr leaf-query root-query)))
+
+(defn attribute-history [id root-attr-name leaf-attr-name]
     (let [hdb (d/history (db/get-db))
           tx-keys [:id :attr :value :added :tid :ts :user :message]
-          attr (get mappings (keyword attr-name))
-          query '[:find ?id ?attr ?value ?op ?t ?ts ?user ?message 
-                  :in $ ?id ?attr
-                  :where [?id ?attr ?value ?t ?op]
-                         [?t :db/txInstant ?ts]
-                         [?t :audit/user ?user]
-                         [?t :audit/message ?message]]]
-        (to-obj (d/q query hdb (Long/parseLong id) attr) tx-keys)))
+          root-attr (get mappings (keyword root-attr-name))
+          leaf-attr (when leaf-attr-name (get mappings (keyword leaf-attr-name)))
+          query (resolve-attribute-history-query root-attr leaf-attr)] 
+        (sort-by :tid (to-obj (d/q query hdb (Long/parseLong id) root-attr leaf-attr) tx-keys))))
