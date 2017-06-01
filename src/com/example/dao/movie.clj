@@ -2,8 +2,8 @@
     (:import (java.util.Date))
     (:require
         [taoensso.timbre :as log]
-        [clojure.set :refer [map-invert]]
-        [clojure.walk :refer [postwalk-replace]]
+        [clojure.set :as set]
+        [clojure.walk :as walk]
         [datomic.api :only [db q pull] :as d]
         [com.example.dao.db :as db]))
 
@@ -24,16 +24,27 @@
      :rating_source :rating/source})
 
 (defn- make-movie [id body]
-    (postwalk-replace mappings (assoc body :id id)))
+    (walk/postwalk-replace mappings (assoc body :id id)))
 
 (defn- transform [m]
-    (postwalk-replace (map-invert mappings) m))
+    (walk/postwalk-replace (set/map-invert mappings) m))
 
 (defn- audit-log [audit]
     (let [tx-id (d/tempid :db.part/tx)]
         {:db/id tx-id
          :audit/user (:user audit)
          :audit/message (:message audit)}))
+
+(defn- calc-genre-retractions [id body]
+    (let [nid (Long/parseLong id)
+          db (db/get-db)
+          query '[:find ?v :in $ ?e :where [?e :movie/genres ?v]]
+          datoms (map first (d/q query db nid))
+          diff (set/difference (set datoms) (set (:genres body)))]
+        (map #(vector :db/retract nid :movie/genres %) diff)))
+
+(defn- to-obj [data keys]
+    (map #(zipmap keys %) data))
 
 (defn create [body audit]
     (let [cxn (db/get-conn)
@@ -50,9 +61,10 @@
 
 (defn updat [id body audit] 
     (let [cxn (db/get-conn)
+          retractions (if (:genres body) (calc-genre-retractions id body) [])
           datom (make-movie (Long/parseLong id) body)
           tx-datom (audit-log audit)
-          tx @(d/transact cxn [datom tx-datom])]
+          tx @(d/transact cxn (vec (concat [datom tx-datom] retractions)))]
         (find-by-id id nil)))
 
 (defn delete [id audit] 
@@ -62,9 +74,6 @@
           datom @(d/transact cxn [retract tx-datom])]
         (log/debug "deleted" (:tx-data datom))))
 
-(defn- to-obj [data keys]
-    (map #(zipmap keys %) data))
-
 (defn history [id]
     (let [hdb (d/history (db/get-db))
           tx-keys [:id :tid :ts :user :message]
@@ -73,8 +82,9 @@
                   :where [?id _ _ ?t]
                          [?t :db/txInstant ?ts]
                          [?t :audit/user ?user]
-                         [?t :audit/message ?message]]]
-        (sort-by :tid (to-obj (d/q query hdb (Long/parseLong id)) tx-keys))))
+                         [?t :audit/message ?message]]
+          datoms (d/q query hdb (Long/parseLong id))]
+        (sort-by :tid (to-obj datoms tx-keys))))
 
 (defn- resolve-attribute-history-query [root-attr leaf-attr]
     (let [root-query '[:find ?id ?attr ?value ?op ?t ?ts ?user ?message
@@ -97,5 +107,6 @@
           tx-keys [:id :attr :value :added :tid :ts :user :message]
           root-attr (get mappings (keyword root-attr-name))
           leaf-attr (when leaf-attr-name (get mappings (keyword leaf-attr-name)))
-          query (resolve-attribute-history-query root-attr leaf-attr)] 
-        (sort-by :tid (to-obj (d/q query hdb (Long/parseLong id) root-attr leaf-attr) tx-keys))))
+          query (resolve-attribute-history-query root-attr leaf-attr)
+          datoms (d/q query hdb (Long/parseLong id) root-attr leaf-attr)]
+        (sort-by :tid (to-obj datoms tx-keys))))

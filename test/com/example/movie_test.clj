@@ -44,7 +44,7 @@
     (testing "PUT /movie/:id should update the movie record"
         (let [movie {:movie {:rating {:id @rating-id :rating_value "PG-13"} :synopsis "updated synopsis" 
                      :cast [{:person_name "Sandra Bullock" :person_role "Actor"}]}
-                     :audit {:user "kevin" :message "add cast, fix genres"}}
+                     :audit {:user "kevin" :message "add cast, fix rating"}}
               res (-> (mock/request :put (str "/movie/" @gravity-id))
                       (mock/content-type "application/json")
                       (mock/body (json/generate-string movie))
@@ -54,16 +54,30 @@
               (is (not (contains? body :error)))
               (is (= (get-in res [:headers "Content-Type"]) "application/json; charset=utf-8"))
               (is (= (:title body) "Gravity"))
+              (is (= (:genres body) ["Drama" "Thriller"]))
               (is (= (get-in body [:cast 0 :person_name]) "Sandra Bullock"))
               (is (= (get-in body [:rating :rating_source]) "MPAA"))
               (is (= (get-in body [:rating :rating_value]) "PG-13"))))
-    
+ 
+    (testing "PUT /movie/:id should correctly retract genres"
+        (let [movie {:movie {:genres ["Thriller" "Disaster Film"]} 
+                     :audit {:user "kevin" :message "update genres"}}
+              res (-> (mock/request :put (str "/movie/" @gravity-id))
+                      (mock/content-type "application/json")
+                      (mock/body (json/generate-string movie))
+                      app)
+              body (-> (:body res) (json/parse-string true))]
+              (is (= (:status res) 200))
+              (is (not (contains? body :error)))
+              (is (= (get-in res [:headers "Content-Type"]) "application/json; charset=utf-8"))
+              (is (= (set (:genres body)) (set ["Thriller" "Disaster Film"])))))
+   
     (testing "GET /movie/:id/history should return entity level history records"
         (let [res (app (mock/request :get (str "/movie/" @gravity-id "/history")))
               body (-> (:body res) (json/parse-string true))]
             (is (= (:status res) 200))
             (is (not (contains? body :error)))
-            (is (= (map :message (:history body)) ["test create", "add cast, fix genres"]))))
+            (is (= (map :message (:history body)) ["test create" "add cast, fix rating" "update genres"]))))
 
     (testing "GET /movie/:id/history/:attr should return attribute level history records"
         (let [res (app (mock/request :get (str "/movie/" @gravity-id "/history/synopsis")))
