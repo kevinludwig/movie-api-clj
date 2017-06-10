@@ -1,4 +1,5 @@
 target/
+docs/
 .lein-failures
 .lein-repl-history
 *.log

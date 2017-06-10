@@ -36,12 +36,11 @@
          :audit/message (:message audit)}))
 
 (defn- calc-genre-retractions [id body]
-    (let [nid (Long/parseLong id)
-          db (db/get-db)
+    (let [db (db/get-db)
           query '[:find ?v :in $ ?e :where [?e :movie/genres ?v]]
-          datoms (map first (d/q query db nid))
+          datoms (map first (d/q query db id))
           diff (set/difference (set datoms) (set (:genres body)))]
-        (map #(vector :db/retract nid :movie/genres %) diff)))
+        (map #(vector :db/retract id :movie/genres %) diff)))
 
 (defn- to-obj [data keys]
     (map #(zipmap keys %) data))
@@ -55,21 +54,21 @@
         (d/resolve-tempid (db/get-db) (:tempids tx) (:db/id datom))))
 
 (defn find-by-id [id t]
-    (let [as-of-db (if t (d/as-of (db/get-db) (Long/parseLong t)) (db/get-db))
-          entity (d/pull as-of-db '[*] (Long/parseLong id))]
+    (let [as-of-db (if t (d/as-of (db/get-db) t) (db/get-db))
+          entity (d/pull as-of-db '[*] id)]
         (when entity (transform entity))))
 
 (defn updat [id body audit] 
     (let [cxn (db/get-conn)
           retractions (if (:genres body) (calc-genre-retractions id body) [])
-          datom (make-movie (Long/parseLong id) body)
+          datom (make-movie id body)
           tx-datom (audit-log audit)
           tx @(d/transact cxn (vec (concat [datom tx-datom] retractions)))]
         (find-by-id id nil)))
 
 (defn delete [id audit] 
     (let [cxn (db/get-conn)
-          retract [:db.fn/retractEntity (Long/parseLong id)]
+          retract [:db.fn/retractEntity id]
           tx-datom (audit-log audit)
           datom @(d/transact cxn [retract tx-datom])]
         (log/debug "deleted" (:tx-data datom))))
@@ -83,7 +82,7 @@
                          [?t :db/txInstant ?ts]
                          [?t :audit/user ?user]
                          [?t :audit/message ?message]]
-          datoms (d/q query hdb (Long/parseLong id))]
+          datoms (d/q query hdb id)]
         (sort-by :tid (to-obj datoms tx-keys))))
 
 (defn- resolve-attribute-history-query [root-attr leaf-attr]
@@ -108,5 +107,5 @@
           root-attr (get mappings (keyword root-attr-name))
           leaf-attr (when leaf-attr-name (get mappings (keyword leaf-attr-name)))
           query (resolve-attribute-history-query root-attr leaf-attr)
-          datoms (d/q query hdb (Long/parseLong id) root-attr leaf-attr)]
+          datoms (d/q query hdb id root-attr leaf-attr)]
         (sort-by :tid (to-obj datoms tx-keys))))
