@@ -20,7 +20,7 @@ Fire it up: `ring server-headless 3000`
 
 ### Plugin usage
 
-* Run tests: `lein midje`
+* Run tests: `lein test`
 * View coverage `lein cloverage`
 * Lint files: `lein eastwood`
 * Beautify: `lein cljfmt check` (or `lein cljfmt fix`)
